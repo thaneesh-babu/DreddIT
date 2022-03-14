@@ -36,7 +36,7 @@ lemmatizer = WordNetLemmatizer()
 sia = SIA()
 
 for submission in subreddit.hot(limit=5):
-    
+
     allComments = []
     post = reddit.submission(id=submission.id)
     for comment in post.comments.list():
@@ -51,11 +51,11 @@ for submission in subreddit.hot(limit=5):
     cleanedString = [word.lower() for word in tokenizedString]
 
     # removing stop words
-    cleanedString = [word for word in cleanedString if word not in allStopWords]
+    cleanedString = [
+        word for word in cleanedString if word not in allStopWords]
 
     # normalizing words using lemmatizing
     cleanedString = ([lemmatizer.lemmatize(word) for word in cleanedString])
-    
 
     results = []
     for word in cleanedString:
@@ -70,8 +70,7 @@ for submission in subreddit.hot(limit=5):
     df.loc[df['compound'] > 0.10, 'label'] = 1
     df.loc[df['compound'] < -0.10, 'label'] = -1
 
-
-    fig, ax = plt.subplots(figsize=(8,8))
+    fig, ax = plt.subplots(figsize=(8, 8))
     counts = df.label.value_counts(normalize=True) * 100
 
     sns.barplot(x=counts.index, y=counts, ax=ax)
@@ -91,7 +90,8 @@ for submission in subreddit.hot(limit=5):
     topNegativeWords = [str(w) for w in negativeFreq]
     topNegativeString = ' , '.join(topNegativeWords)
 
-    wordcloud_positive = WordCloud(background_color='white').generate(topPositiveString)
+    wordcloud_positive = WordCloud(
+        background_color='white').generate(topPositiveString)
     wordcloud_negative = WordCloud().generate(topNegativeString)
 
     plt.imshow(wordcloud_positive, interpolation='bilinear')
