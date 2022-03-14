@@ -21,83 +21,86 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-reddit = praw.Reddit(client_id=os.environ.get("CLIENT_ID"),
-                     client_secret=os.environ.get("CLIENT_SECRET"),
-                     user_agent="ua")
 
-subreddit = reddit.subreddit('gatech')
+def run_nlp(subreddit_name):
+    reddit = praw.Reddit(client_id=os.environ.get("CLIENT_ID"),
+                         client_secret=os.environ.get("CLIENT_SECRET"),
+                         user_agent="ua")
 
-nlp = en_core_web_sm.load()
-allStopWords = nlp.Defaults.stop_words
+    subreddit = reddit.subreddit(subreddit_name)
 
-tokenizer = RegexpTokenizer('\w+|\$[\d\.]+|http\S+')
-lemmatizer = WordNetLemmatizer()
+    nlp = en_core_web_sm.load()
+    allStopWords = nlp.Defaults.stop_words
 
-sia = SIA()
+    tokenizer = RegexpTokenizer('\w+|\$[\d\.]+|http\S+')
+    lemmatizer = WordNetLemmatizer()
 
-for submission in subreddit.hot(limit=5):
+    sia = SIA()
 
-    allComments = []
-    post = reddit.submission(id=submission.id)
-    for comment in post.comments.list():
-        allComments.append(comment.body)
-    print(len(allComments))
-    stringifiedList = [str(com) for com in allComments]
-    uncleanString = ' , '.join(stringifiedList)
+    for submission in subreddit.hot(limit=5):
 
-    emojilessString = emoji.get_emoji_regexp().sub(u'', uncleanString)
-    tokenizedString = tokenizer.tokenize(emojilessString)
-    # lowering the case of all words
-    cleanedString = [word.lower() for word in tokenizedString]
+        allComments = []
+        post = reddit.submission(id=submission.id)
+        for comment in post.comments.list():
+            allComments.append(comment.body)
+        print(len(allComments))
+        stringifiedList = [str(com) for com in allComments]
+        uncleanString = ' , '.join(stringifiedList)
 
-    # removing stop words
-    cleanedString = [
-        word for word in cleanedString if word not in allStopWords]
+        emojilessString = emoji.get_emoji_regexp().sub(u'', uncleanString)
+        tokenizedString = tokenizer.tokenize(emojilessString)
+        # lowering the case of all words
+        cleanedString = [word.lower() for word in tokenizedString]
 
-    # normalizing words using lemmatizing
-    cleanedString = ([lemmatizer.lemmatize(word) for word in cleanedString])
+        # removing stop words
+        cleanedString = [
+            word for word in cleanedString if word not in allStopWords]
 
-    results = []
-    for word in cleanedString:
-        polarityScore = sia.polarity_scores(word)
-        polarityScore['words'] = word
-        results.append(polarityScore)
+        # normalizing words using lemmatizing
+        cleanedString = ([lemmatizer.lemmatize(word)
+                         for word in cleanedString])
 
-    pd.set_option('display.max_columns', None, 'max_colwidth', None)
-    df = pd.DataFrame.from_records(results)
+        results = []
+        for word in cleanedString:
+            polarityScore = sia.polarity_scores(word)
+            polarityScore['words'] = word
+            results.append(polarityScore)
 
-    df['label'] = 0
-    df.loc[df['compound'] > 0.10, 'label'] = 1
-    df.loc[df['compound'] < -0.10, 'label'] = -1
+        pd.set_option('display.max_columns', None, 'max_colwidth', None)
+        df = pd.DataFrame.from_records(results)
 
-    fig, ax = plt.subplots(figsize=(8, 8))
-    counts = df.label.value_counts(normalize=True) * 100
+        df['label'] = 0
+        df.loc[df['compound'] > 0.10, 'label'] = 1
+        df.loc[df['compound'] < -0.10, 'label'] = -1
 
-    sns.barplot(x=counts.index, y=counts, ax=ax)
+        fig, ax = plt.subplots(figsize=(8, 8))
+        counts = df.label.value_counts(normalize=True) * 100
 
-    ax.set_xticklabels(['Negative', 'Neutral', 'Positive'])
-    ax.set_ylabel("Percentage")
+        sns.barplot(x=counts.index, y=counts, ax=ax)
 
-    plt.show()
+        ax.set_xticklabels(['Negative', 'Neutral', 'Positive'])
+        ax.set_ylabel("Percentage")
 
-    positiveWords = list(df.loc[df['label'] == 1].words)
-    negativeWords = list(df.loc[df['label'] == -1].words)
-    positiveFreq = FreqDist(positiveWords).most_common(10)
-    negativeFreq = FreqDist(negativeWords).most_common(10)
+        plt.show()
 
-    topPositiveWords = [str(w) for w in positiveFreq]
-    topPositiveString = ' , '.join(topPositiveWords)
-    topNegativeWords = [str(w) for w in negativeFreq]
-    topNegativeString = ' , '.join(topNegativeWords)
+        positiveWords = list(df.loc[df['label'] == 1].words)
+        negativeWords = list(df.loc[df['label'] == -1].words)
+        positiveFreq = FreqDist(positiveWords).most_common(10)
+        negativeFreq = FreqDist(negativeWords).most_common(10)
 
-    wordcloud_positive = WordCloud(
-        background_color='white').generate(topPositiveString)
-    wordcloud_negative = WordCloud().generate(topNegativeString)
+        topPositiveWords = [str(w) for w in positiveFreq]
+        topPositiveString = ' , '.join(topPositiveWords)
+        topNegativeWords = [str(w) for w in negativeFreq]
+        topNegativeString = ' , '.join(topNegativeWords)
 
-    plt.imshow(wordcloud_positive, interpolation='bilinear')
-    plt.axis("off")
-    plt.show()
+        wordcloud_positive = WordCloud(
+            background_color='white').generate(topPositiveString)
+        wordcloud_negative = WordCloud().generate(topNegativeString)
 
-    plt.imshow(wordcloud_negative, interpolation='bilinear')
-    plt.axis("off")
-    plt.show()
+        plt.imshow(wordcloud_positive, interpolation='bilinear')
+        plt.axis("off")
+        plt.show()
+
+        plt.imshow(wordcloud_negative, interpolation='bilinear')
+        plt.axis("off")
+        plt.show()
