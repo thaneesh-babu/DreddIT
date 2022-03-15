@@ -4,12 +4,25 @@ import SearchBar from "./components/SearchBar";
 function App() {
   return (
     <div>
-    <div className="heading">
-      <h1>DreddIT</h1>
-    </div>
-    <div className="App">
-      <SearchBar />
-    </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <h1>DreddIT</h1>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "50vh",
+        }}
+      >
+        <SearchBar />
+      </div>
     </div>
   );
 }
