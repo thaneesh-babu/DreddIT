@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def run_nlp(subreddit_name):
+def run_nlp(subreddit_name, posts_limit):
     reddit = praw.Reddit(client_id=os.environ.get("CLIENT_ID"),
                          client_secret=os.environ.get("CLIENT_SECRET"),
                          user_agent="ua")
@@ -37,7 +37,7 @@ def run_nlp(subreddit_name):
 
     sia = SIA()
 
-    for submission in subreddit.hot(limit=5):
+    for submission in subreddit.hot(limit=posts_limit):
 
         allComments = []
         post = reddit.submission(id=submission.id)

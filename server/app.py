@@ -40,8 +40,10 @@ def get():
 @app.route("/input", methods=['POST'])
 def getInput():
     input = request.get_json()['data']
-    print(input)
-    return main.run_nlp(input)
+    posts_limit = request.get_json()['noOfPosts']
+    print(input, posts_limit)
+
+    return main.run_nlp(input, posts_limit)
 
 
 if __name__ == "__main__":
