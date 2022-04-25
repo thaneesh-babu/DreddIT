@@ -33,7 +33,6 @@ cors = CORS(app)
 
 @app.route("/", methods=['GET'])
 def get():
-    print("get route reached")
     return {}
 
 
@@ -43,7 +42,7 @@ def getInput():
     posts_limit = request.get_json()['noOfPosts']
     print(input, posts_limit)
 
-    return main.run_nlp(input, posts_limit)
+    return main.run_nlp(input, int(posts_limit))
 
 
 if __name__ == "__main__":

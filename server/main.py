@@ -38,13 +38,12 @@ def run_nlp(subreddit_name, posts_limit):
     sia = SIA()
 
     for submission in subreddit.hot(limit=posts_limit):
-
-        allComments = []
-        post = reddit.submission(id=submission.id)
-        for comment in post.comments.list():
-            allComments.append(comment.body)
-        print(len(allComments))
-        stringifiedList = [str(com) for com in allComments]
+        submission.comments.replace_more(limit=0)
+        all_comments = submission.comments.list()
+        for comment in all_comments:
+            all_comments.append(comment)
+        print(len(all_comments))
+        stringifiedList = [str(com) for com in all_comments]
         uncleanString = ' , '.join(stringifiedList)
 
         emojilessString = emoji.get_emoji_regexp().sub(u'', uncleanString)
