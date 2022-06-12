@@ -34,7 +34,7 @@ const SearchBar = () => {
         <InputGroup size="sm">
           <InputLeftAddon children=" r/ " color="white" />
           <Input placeholder="Search subreddit" onChange={handleInputChange} />
-          <Input placeholder="No. of posts to analyze" onChange={handlePostsLimitChange} />
+          <Input placeholder="No. of posts to analyze" onChange={handlePostsLimitChange}/>
           <Button h="1.75rem" size="sm" bg="lightgreen" onClick={postInput}>
             Search
           </Button>

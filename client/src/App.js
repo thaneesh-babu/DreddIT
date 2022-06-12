@@ -1,4 +1,5 @@
 import "./App.css";
+import { Heading } from "@chakra-ui/react";
 import SearchBar from "./components/SearchBar";
 
 function App() {
@@ -11,7 +12,7 @@ function App() {
           alignItems: "center",
         }}
       >
-        <h1>DreddIT</h1>
+        <Heading>DreddIT</Heading>
       </div>
       <div
         style={{
