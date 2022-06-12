@@ -22,13 +22,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def run_nlp(subreddit_name, posts_limit):
+def nlp(subreddit_name, posts_limit):
     reddit = praw.Reddit(client_id=os.environ.get("CLIENT_ID"),
                          client_secret=os.environ.get("CLIENT_SECRET"),
                          user_agent="ua")
 
     subreddit = reddit.subreddit(subreddit_name)
-
+    submissions = []
     nlp = en_core_web_sm.load()
     allStopWords = nlp.Defaults.stop_words
 
@@ -36,14 +36,15 @@ def run_nlp(subreddit_name, posts_limit):
     lemmatizer = WordNetLemmatizer()
 
     sia = SIA()
-
+    count = 1
     for submission in subreddit.hot(limit=posts_limit):
-        submission.comments.replace_more(limit=0)
-        all_comments = submission.comments.list()
-        for comment in all_comments:
-            all_comments.append(comment)
-        print(len(all_comments))
-        stringifiedList = [str(com) for com in all_comments]
+        print(submission.title)
+        submissions.append(submission.title)
+        allComments = []
+        submission.comments.replace_more(limit=None)
+        for comment in submission.comments.list():
+            allComments.append(comment.body)
+        stringifiedList = [str(com) for com in allComments]
         uncleanString = ' , '.join(stringifiedList)
 
         emojilessString = emoji.get_emoji_regexp().sub(u'', uncleanString)
@@ -64,7 +65,7 @@ def run_nlp(subreddit_name, posts_limit):
             polarityScore = sia.polarity_scores(word)
             polarityScore['words'] = word
             results.append(polarityScore)
-
+        print(len(results))
         pd.set_option('display.max_columns', None, 'max_colwidth', None)
         df = pd.DataFrame.from_records(results)
 
@@ -80,7 +81,9 @@ def run_nlp(subreddit_name, posts_limit):
         ax.set_xticklabels(['Negative', 'Neutral', 'Positive'])
         ax.set_ylabel("Percentage")
 
-        plt.show()
+        plt.title(submission.title)
+        plt.savefig("../client/plots/plot" + str(count) + ".jpg")
+        count += 1
 
         positiveWords = list(df.loc[df['label'] == 1].words)
         negativeWords = list(df.loc[df['label'] == -1].words)
@@ -98,8 +101,16 @@ def run_nlp(subreddit_name, posts_limit):
 
         plt.imshow(wordcloud_positive, interpolation='bilinear')
         plt.axis("off")
-        plt.show()
+        plt.title(submission.title)
+        plt.savefig("../client/plots/plot" + str(count) + ".jpg")
+        count += 1
 
         plt.imshow(wordcloud_negative, interpolation='bilinear')
         plt.axis("off")
-        plt.show()
+        plt.title(submission.title)
+        plt.savefig("../client/plots/plot" + str(count) + ".jpg")
+        count += 1
+
+    return ""
+
+
